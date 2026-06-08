@@ -40,3 +40,6 @@ docker-compose.override.yml
 
 # Temporary
 *.tmp
+
+private_key
+private_key.pub
