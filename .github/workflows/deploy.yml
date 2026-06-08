@@ -1,5 +1,4 @@
-name: depoy node js code on Excloud
-
+name: deploy node js code on Excloud
 
 on:
   push:
@@ -12,10 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install dependencies
-        run: npm install
+        uses: actions/checkout@v4
 
       - name: Deploy to Excloud
         uses: appleboy/ssh-action@master
@@ -24,7 +20,20 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
+            set -e
             cd /home/ubuntu/cicd-excloud
+            if [ -s "$HOME/.profile" ]; then . "$HOME/.profile"; fi
+            if [ -s "$HOME/.bashrc" ]; then . "$HOME/.bashrc"; fi
+            if [ -s "$HOME/.nvm/nvm.sh" ]; then . "$HOME/.nvm/nvm.sh"; fi
+            if command -v nvm >/dev/null 2>&1; then
+              nvm use --lts || nvm install --lts
+            fi
+            command -v node
+            command -v npm
             git pull origin main
             npm install
-            pm2 restart 0
+            if command -v pm2 >/dev/null 2>&1; then
+              pm2 restart 0 || pm2 start index.js --name chai-cicd
+            else
+              npx pm2 restart 0 || npx pm2 start index.js --name chai-cicd
+            fi
