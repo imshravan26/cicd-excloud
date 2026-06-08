@@ -23,8 +23,8 @@ jobs:
           host: 210.79.129.33
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
-        script: |
-          cd /home/ubuntu/cicd-excloud
-          git pull origin main
-          npm install
-          pm2 restart 0
+          script: |
+            cd /home/ubuntu/cicd-excloud
+            git pull origin main
+            npm install
+            pm2 restart 0
