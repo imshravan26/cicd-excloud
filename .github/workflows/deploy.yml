@@ -30,27 +30,25 @@ jobs:
           docker build -t shrvn26/deploy-node .
           docker push shrvn26/deploy-node
 
-      - name: Deploy to Excloud
-        uses: appleboy/ssh-action@master
+      - name: Deploy on ExCloud
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 210.79.129.33
+          host: 210.79.128.168
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            set -e
-            cd /home/ubuntu/cicd-excloud
-            if [ -s "$HOME/.profile" ]; then . "$HOME/.profile"; fi
-            if [ -s "$HOME/.bashrc" ]; then . "$HOME/.bashrc"; fi
-            if [ -s "$HOME/.nvm/nvm.sh" ]; then . "$HOME/.nvm/nvm.sh"; fi
-            if command -v nvm >/dev/null 2>&1; then
-              nvm use --lts || nvm install --lts
-            fi
-            command -v node
-            command -v npm
-            git pull origin main
-            npm install
-            if command -v pm2 >/dev/null 2>&1; then
-              pm2 restart 0 || pm2 start index.js --name chai-cicd
-            else
-              npx pm2 restart 0 || npx pm2 start index.js --name chai-cicd
-            fi
+            # kill the existing container if it exists
+            docker rm -f deploy-node || true
+
+            # Again pull the freash image from hub
+            sudo docker pull shrvn26/deploy-node
+
+            # Run docker run -d -- name deploy-node --restart unless-stopped -p 8000:8000 shrvn26/deploy-node
+            sudo docker run -d --name deploy-node --restart unless-stopped -p 8000:8000 shrvn26/deploy-node
+
+            #clean up old/unused images
+            sudo docker image prune -f
+
+            
+
+            
